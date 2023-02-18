@@ -405,7 +405,7 @@ class UNet(BaseModule):
         self._check_input_divisible(x)
         enc_outs = []
         for enc in self.encoder:
-            x = enc(x)
+            x = enc(x)#encoder提取特征
             enc_outs.append(x)
         dec_outs = [x]
         for i in reversed(range(len(self.decoder))):

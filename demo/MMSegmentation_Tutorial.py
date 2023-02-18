@@ -1,12 +1,12 @@
-
+# %%
 import torch, torchvision
 print(torch.__version__, torch.cuda.is_available())
-
+# %%
 # Check MMSegmentation installation
 import mmseg
 print(mmseg.__version__)
 
-
+# %%
 from mmseg.apis import inference_segmentor, init_segmentor, show_result_pyplot
 from mmseg.core.evaluation import get_palette
 
