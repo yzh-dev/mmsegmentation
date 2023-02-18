@@ -19,6 +19,11 @@ model = dict(
         act_cfg=dict(type='ReLU'),
         upsample_cfg=dict(type='InterpConv'),
         norm_eval=False),
+    neck=dict(#添加neck
+        type='FPN',
+        in_channels=[1024,512,256,128,64],
+        out_channels=64,
+        num_outs=5),
     decode_head=dict(
         type='FCNHead',
         in_channels=64,#输入的通道数
