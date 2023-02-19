@@ -2,51 +2,80 @@ norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
     type='EncoderDecoder',
     # pretrained=None,
+    # UNET网络结构
+    # backbone=dict(
+    #     type='UNet',
+    #     in_channels=3,
+    #     base_channels=64,
+    #     num_stages=5,
+    #     strides=(1, 1, 1, 1, 1),
+    #     enc_num_convs=(2, 2, 2, 2, 2),
+    #     dec_num_convs=(2, 2, 2, 2),
+    #     downsamples=(True, True, True, True),
+    #     enc_dilations=(1, 1, 1, 1, 1),
+    #     dec_dilations=(1, 1, 1, 1),
+    #     with_cp=False,
+    #     conv_cfg=None,
+    #     norm_cfg=norm_cfg,
+    #     act_cfg=dict(type='ReLU'),
+    #     upsample_cfg=dict(type='InterpConv'),
+    #     norm_eval=False),
+    # neck=dict(  # 添加neck
+    #     type='FPN',
+    #     in_channels=[1024, 512, 256, 128, 64],
+    #     out_channels=64,#所有阶段的输出通道数都变为64
+    #     num_outs=5),
+
+    # 主干网络修改为VisionTransformer
+    # 问题：主干网络修改了，预训练参数是如何加载进来的？
     backbone=dict(
-        type='UNet',
+        type='VisionTransformer',
+        img_size=(96, 96),
+        patch_size=16,
         in_channels=3,
-        base_channels=64,
-        num_stages=5,
-        strides=(1, 1, 1, 1, 1),
-        enc_num_convs=(2, 2, 2, 2, 2),
-        dec_num_convs=(2, 2, 2, 2),
-        downsamples=(True, True, True, True),
-        enc_dilations=(1, 1, 1, 1, 1),
-        dec_dilations=(1, 1, 1, 1),
-        with_cp=False,
-        conv_cfg=None,
-        norm_cfg= norm_cfg,
-        act_cfg=dict(type='ReLU'),
-        upsample_cfg=dict(type='InterpConv'),
-        norm_eval=False),
-    neck=dict(#添加neck
-        type='FPN',
-        in_channels=[1024,512,256,128,64],
-        out_channels=64,
-        num_outs=5),
+        embed_dims=768,
+        num_layers=12,
+        num_heads=12,
+        mlp_ratio=4,
+        out_indices=(2, 3, 5, 8, 11),
+        qkv_bias=True,
+        drop_rate=0.0,
+        attn_drop_rate=0.0,
+        drop_path_rate=0.0,
+        with_cls_token=True,
+        norm_cfg=dict(type='LN', eps=1e-6),
+        act_cfg=dict(type='GELU'),
+        norm_eval=False,
+        interpolate_mode='bicubic'),
+    neck=dict(
+            type='FPN',
+            in_channels=[768, 768, 768, 768, 768],#输入通道数调整为transformer的隐藏层维度
+            out_channels=64,
+            num_outs=5),
+
     decode_head=dict(
         type='FCNHead',
-        in_channels=64,#输入的通道数
-        in_index=4,#输入的特征层索引
-        channels=64,
+        in_channels=64,  # 输入的通道数
+        in_index=4,  # 输入的特征层索引
+        channels=64,  # Channels after modules, before conv_seg
         num_convs=1,
         concat_input=False,
         dropout_ratio=0.1,
-        num_classes=2,#类别个数
-        norm_cfg= norm_cfg,
+        num_classes=8,  # 类别个数
+        norm_cfg=norm_cfg,
         align_corners=False,
         loss_decode=dict(
             type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
     auxiliary_head=dict(
         type='FCNHead',
-        in_channels=128,#输入的通道数
-        in_index=3,#输入的特征层索引
+        in_channels=64,  # 输入的通道数
+        in_index=3,  # 输入的特征层索引
         channels=64,
         num_convs=1,
         concat_input=False,
         dropout_ratio=0.1,
         num_classes=2,
-        norm_cfg= norm_cfg,
+        norm_cfg=norm_cfg,
         align_corners=False,
         loss_decode=dict(
             type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4)),
