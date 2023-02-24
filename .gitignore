@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+
 # C extensions
 *.so
 
@@ -105,6 +106,7 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+outputs
 data
 .vscode
 .idea
